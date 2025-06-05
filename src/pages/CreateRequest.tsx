@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { cpf, cnpj } from 'cpf-cnpj-validator';
 import '../css/CreateRequest.css';
 
 const CreateRequest: React.FC = () => {
@@ -15,7 +16,20 @@ const CreateRequest: React.FC = () => {
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let newValue = value;
+
+    if (name === 'cpfOrCnpj') {
+      const numericValue = value.replace(/\D/g, '');
+
+      if (numericValue.length <= 11) {
+        newValue = cpf.format(numericValue);
+      } else {
+        newValue = cnpj.format(numericValue);
+      }
+    }
+
+    setForm({ ...form, [name]: newValue });
   };
 
   const handleSubmit = async () => {
@@ -71,6 +85,7 @@ const CreateRequest: React.FC = () => {
         value={form.cpfOrCnpj}
         onChange={handleChange}
         className="create-input"
+        maxLength={18} 
       />
 
       <button onClick={handleSubmit} className="create-button">
@@ -80,10 +95,10 @@ const CreateRequest: React.FC = () => {
       <button onClick={() => navigate('/list')} className="list-button">
         Ver Solicitações
       </button>
+      
       <button onClick={() => navigate('/login')} className="login-button">
         Painel Administrativo
       </button>
-
     </div>
   );
 };
